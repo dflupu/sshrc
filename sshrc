@@ -1,4 +1,11 @@
 #!/usr/bin/env bash
+
+SSHCMD=ssh
+
+if type 'zssh' > /dev/null; then
+    SSHCMD=zssh
+fi
+
 function sshrc() {
     local SSHHOME=${SSHHOME:=~}
     if [ -f $SSHHOME/.sshrc ]; then
@@ -11,7 +18,7 @@ function sshrc() {
             echo >&2 $'.sshrc.d and .sshrc files must be less than 64kb\ncurrent size: '$SIZE' bytes'
             exit 1
         fi
-        ssh -t "$@" "
+        $SSHCMD -t "$@" "
             command -v xxd >/dev/null 2>&1 || { echo >&2 \"sshrc requires xxd to be installed on the server, but it's not. Aborting.\"; exit 1; }
             if [ -e /etc/motd ]; then cat /etc/motd; fi
             if [ -e /etc/update-motd.d ]; then run-parts /etc/update-motd.d/ 2>/dev/null; fi
@@ -60,5 +67,5 @@ if [ "$1" ]; then
     command -v xxd >/dev/null 2>&1 || { echo >&2 "sshrc requires xxd to be installed locally, but it's not. Aborting."; exit 1; }
     sshrc "$@"
 else
-    ssh
+    $SSHCMD
 fi
